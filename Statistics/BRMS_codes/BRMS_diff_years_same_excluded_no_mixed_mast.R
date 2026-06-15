@@ -1,0 +1,78 @@
+library(brms)
+
+
+
+
+options(brms.backend = "cmdstanr")
+setwd("/xdisk/laurenpetrullo/schiro/dyadic_models/new_subselection")
+melted_diffs_selected_try = readRDS("Only_diff_year_15th_Aug_BRMS_no_mixed.RDS")
+
+
+### first Same year models (remove different years) ------
+### Model 1 jacc 
+model1<-brm(Jaccard_Similarity~1+mother_offspring*masting+mother_offspring*same_season+year_dist+
+              dist_m+same_sex+read_dist+run+age_dist+
+              (1|mm(Sample1,Sample2)) + (1|mm(squirrel1,squirrel2)),
+            data = melted_diffs_selected_try,
+            family= "Beta",
+            warmup = 1000, iter = 3000,
+            threads = threading(6),
+            cores = 24,
+            chains = 4,
+            init=0)
+
+
+saveRDS(model1,"model1_jacc_diff_year_ag_15th_same_excluded_no_mix_mast.RDS")
+
+
+
+
+### Model 2 BC sim
+model1<-brm(BC_Similarity~1+mother_offspring*masting+mother_offspring*same_season+year_dist+
+              dist_m+same_sex+read_dist+run+age_dist+
+              (1|mm(Sample1,Sample2)) + (1|mm(squirrel1,squirrel2)),
+            data = melted_diffs_selected_try,
+            family= "Beta",
+            warmup = 1000, iter = 3000,
+            threads = threading(6),
+            cores = 24,
+            chains = 4,
+            init=0)
+
+saveRDS(model1,"model1_BC_diff_year_ag_15th_same_excluded_no_mix_mast.RDS")
+
+
+
+### first Same year models (remove different years) ------
+### Model 1 jacc 
+model1<-brm(Jaccard_Similarity~1+masting+same_season+year_dist+
+              dist_m+same_sex+read_dist+run+age_dist+
+              (1|mm(Sample1,Sample2)) + (1|mm(squirrel1,squirrel2)),
+            data = melted_diffs_selected_try,
+            family= "Beta",
+            warmup = 1000, iter = 3000,
+            threads = threading(6),
+            cores = 24,
+            chains = 4,
+            init=0)
+
+
+saveRDS(model1,"model1_jacc_diff_year_ag_15th_same_excluded_no_mom_off_no_mix_mast.RDS")
+
+
+
+
+### Model 2 BC sim
+model1<-brm(BC_Similarity~1+mother_offspring*masting+mother_offspring*same_season+year_dist+
+              dist_m+same_sex+read_dist+run+age_dist+
+              (1|mm(Sample1,Sample2)) + (1|mm(squirrel1,squirrel2)),
+            data = melted_diffs_selected_try,
+            family= "Beta",
+            warmup = 1000, iter = 3000,
+            threads = threading(6),
+            cores = 24,
+            chains = 4,
+            init=0)
+
+saveRDS(model1,"model1_BC_diff_year_ag_15th_same_excluded_no_mom_off_no_mix_mast.RDS")
+
