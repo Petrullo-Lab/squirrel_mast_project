@@ -19,49 +19,17 @@ source("~/Library/CloudStorage/OneDrive-UniversityofArizona/helpful_r_functions.
 setwd("/Users/gabri/Library/CloudStorage/OneDrive-UniversityofArizona/Squirrels/analysis_data_oct_2025/16s/comb_ASV_tabs")
 ASVtable = readRDS("new_ASVtable_all_samples.RDS")
 Taxtable = readRDS("Taxtab_total_silva.RDS")
-metadata_table = readRDS("new_meta_all_samples.RDS")
-unique(metadata_table$sex)
-mean(table(metadata_table$squirrel_id))
-length(table(metadata_table$squirrel_id))
-
-
-getwd()
-#metadata_table_females = metadata_table[metadata_table$sex =="F", ]
-#write.csv(metadata_table_females,"metadata_table_females.csv")
-colnames(ASVtable)[1:10]
-
-### Add birth year 
-#krsp_db <- krsp_connect (host = "krsp.cepb5cjvqban.us-east-2.rds.amazonaws.com",
-#                         dbname ="krsp",
-#                         username = Sys.getenv("krsp_user"),
-#                         password = Sys.getenv("krsp_password")
-#)
-#squirrel<-tbl(krsp_db, "flastall") %>% 
-#  collect()
-#  metadata_table$birth_year <- squirrel$byear[
-#  match(metadata_table$squirrel_id, squirrel$squirrel_id)
-#]
-#metadata_table$birth_year
-#metadata_table$day_of_year = yday(metadata_table$date)
-#metadata_table$year = year(metadata_table$date)
-#metadata_table$age = metadata_table$year - metadata_table$birth_year
-#hist(metadata_table$age)
-#saveRDS(metadata_table, "new_meta_all_samples_bdate.RDS")
 metadata_table = readRDS("new_meta_all_samples_bdate.RDS")
-getwd()
-write.table(metadata_table, "metadata.txt")
-unique(metadata_table$year)
-table(metadata_table$run.x)
-### test
+
+
+
 unique(rownames(ASVtable)  == metadata_table$name) # doh
 metadata_table <- metadata_table[match(rownames(ASVtable), metadata_table$name), ]
 unique(rownames(ASVtable)  == metadata_table$name) # yay
 unique(rownames(Taxtable)  == colnames(ASVtable)) # yay
 sort(rowSums(ASVtable))
 ncol(ASVtable)
-#ASVtab_rar1 = 
-### both tables are matched
-sum(ASVtable)
+
 
 
 
@@ -136,12 +104,6 @@ metadata_table$mast = ifelse(metadata_table$year %in% c(2010, 2014, 2019, 2022),
 table(metadata_table$gr)
 metadata_table = metadata_table[metadata_table$gr != "BT",]
 ASVtable = ASVtable[rownames(ASVtable) %in% metadata_table$name,]
-metadata_table$cones = ifelse(metadata_table$day_of_year > 200, "cone_available", "cone unavailable")
-metadata_table$sept = ifelse(metadata_table$day_of_year > 200, "post", "pre")
-
-table(metadata_table$sept, metadata_table$mast)
-sum(ASVtable)
-
 
 
 
@@ -154,6 +116,7 @@ metadata_table$season_cat <- cut(
 
 
 min(metadata_table$day_of_year)
+max(metadata_table$day_of_year)
 
 
 # Count number of samples per masting status, season, and year
@@ -176,40 +139,6 @@ ggplot(counts, aes(x = year_factor, y = n, fill = year_factor)) +
     strip.text = element_text(face = "bold")
   )
 
-
-### alpha diversity -------------
-sort(rowSums(ASVtable))
-metadata_table$read_number = rowSums(ASVtable)
-metadata_table$Richness<-specnumber(ASVtable)
-metadata_table$Shannon<-vegan::diversity(ASVtable, index="shannon")#Chang
-
-metadata_table$Richness.rar<-specnumber(rrarefy(ASVtable, 10000)) #Change this number according to the lowest sample
-metadata_table$Shannon.rar<-vegan::diversity(rrarefy(ASVtable, 10000), index="shannon")#Change this number according to the lowest sample
-metadata_table = metadata_table[metadata_table$Shannon.rar >3,]
-#saveRDS(metadata_table,"metadata_table_sub.RDS")
-#saveRDS(ASVtable,"ASVtable_sub.RDS")
-
-a = ggplot(metadata_table, aes(x = day_of_year, y = Shannon.rar, fill = mast, color = mast)) +
-  geom_point(size = 1, alpha = 0.6) +
-  theme_classic() +
-  labs(y = "Shannon H'", x = "Day of the year", fill = "Year") +
-  scale_fill_brewer(palette = "Set2") +
-  scale_color_brewer(palette = "Set2") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-  geom_smooth() + #facet_wrap(~year_factor, scales = "free_y")+
-  geom_vline(xintercept = c(120, 180), linetype = "dashed", color = "black", alpha = 0.7)
-
-a
-length(unique(metadata_table$squirrel_id))
-
-
-
-
-metadata_table$tukey_shannon = transformTukey(metadata_table$Shannon)
-metadata_table$squirrel_id_letter = paste("a_",metadata_table$squirrel_id, sep = "")
-metadata_table$day_scaled <- scale(metadata_table$day_of_year, center = TRUE, scale = TRUE)
-
-library(ggplot2)
 
 season_bg <- data.frame(
   ymin = c(0, 120, 180),
@@ -251,57 +180,23 @@ ggplot(metadata_table,
   theme_bw()
 
 
-shannon_time_cube = lmer(tukey_shannon ~ day_scaled +sex+gr+age+read_number+ I(day_scaled^2)*mast + I(day_scaled^3) *  mast + (1 | squirrel_id_letter)+ (1|year_factor)+ (1|run.x) , data = metadata_table)
-#anova(shannon_time_with_quad_term,shannon_time_cube) # shannon_time_cube better
 
-metadata_table$tukey_shannon
-metadata_table$date
-
-### residuals
-residuals <- residuals(shannon_time_cube)
-qqnorm(residuals) # o
-residuals[which(residuals > 6000)]
-residuals[names(residuals) == 481]
-metadata_table_nores = metadata_table[!rownames(metadata_table) == 481,]
-
-shannon_time_cube = lmer(tukey_shannon ~ day_scaled +sex+age+gr+ I(day_scaled^2)*mast + read_number+
-                           I(day_scaled^3) *  mast + (1 | squirrel_id_letter)+ (1|year_factor)+ (1|run.x) , data = metadata_table_nores)
-
-residuals <- residuals(shannon_time_cube)
-qqnorm(residuals) # o
-hist(residuals)
-plot(fitted(shannon_time_cube), residuals(shannon_time_cube)) # Ok a little problem of heterosched but nothing huge
-car::Anova(shannon_time_cube, type = "III" )
-summary(shannon_time_cube)
-
-
-# Predict fitted values (excluding random effects)
-# Prediction grid: smooth across days, both mast and non-mast
-newdat <- expand.grid(
-  day_scaled = seq(min(metadata_table$day_scaled), 
-                   max(metadata_table$day_scaled), 
-                   length.out = 200),
-  mast = c("non-mast", "mast"),
-  sex = "F",   # or whichever is most common
-  gr = "SU",
-  age = median(metadata_table$age))
-newdat$read_number <- mean(metadata_table_nores$read_number, na.rm = TRUE)
-newdat_fit <- predict(shannon_time_cube, newdata = newdat, re.form = NA, se.fit = TRUE, type = "response")
-newdat$fit = newdat_fit$fit
+### alpha diversity -------------
+sort(rowSums(ASVtable))
+metadata_table$read_number = rowSums(ASVtable)
+metadata_table$Richness<-specnumber(ASVtable)
+metadata_table$Shannon<-vegan::diversity(ASVtable, index="shannon")#Chang
+metadata_table$Richness.rar<-specnumber(rrarefy(ASVtable, 10000)) #Change this number according to the lowest sample
+metadata_table$Shannon.rar<-vegan::diversity(rrarefy(ASVtable, 10000), index="shannon")#Change this number according to the lowest sample
+metadata_table = metadata_table[metadata_table$Shannon.rar >3,]
+#saveRDS(metadata_table,"metadata_table_sub.RDS")
+#saveRDS(ASVtable,"ASVtable_sub.RDS")
 
 
 
-
-ggplot(newdat, aes(x = day_scaled, y = fit, color = mast)) +
-  geom_line(size = 1.2)  +
-  scale_color_manual(values = c("non-mast" = "darkorange", "mast" = "green4")) +
-  labs(
-    x = "Scaled day of year",
-    y = "Predicted Tukey transformed Shannon H'",
-    color = "Year type",
-    title = "Seasonal trend in Shannon diversity: mast vs non-mast years"
-  ) +
-  theme_classic(base_size = 10)
+metadata_table$tukey_shannon = transformTukey(metadata_table$Shannon)
+metadata_table$squirrel_id_letter = paste("a_",metadata_table$squirrel_id, sep = "")
+metadata_table$day_scaled <- scale(metadata_table$day_of_year, center = TRUE, scale = TRUE)
 
 
 
@@ -337,7 +232,7 @@ ggarrange(a,b, common.legend = TRUE, ncol =1, legend = "top", heights = c(1, 1.5
 
 
 shannon_season_no_slopes = lmer(Richness ~ season_cat*mast+ age+sex+gr+  read_number+
-                                  (1 | squirrel_id_letter)+ (1|year_factor) +(1|run.x) , data = metadata_table_nores)
+                               (1 | squirrel_id_letter)+ (1|year_factor) +(1|run.x) , data = metadata_table_nores)
 
 
 residuals <- residuals(shannon_season_no_slopes)
@@ -357,11 +252,6 @@ emm_season_mast <- emmeans(shannon_season_no_slopes, ~ season_cat)
 pairs(emm_season_mast,  adjust = "tukey")
 emm_season_mast <- emmeans(shannon_season_no_slopes, ~ mast|season_cat)
 pairs(emm_season_mast,  adjust = "tukey")
-
-emmip(emm_season_mast, mast ~ season_cat, CIs = TRUE) + theme_classic()+
-  scale_fill_brewer(palette = "Set2") +
-  scale_color_brewer(palette = "Set2")
-
 
 # Average values for each squirrel-year-season combination (for ALL squirrels)
 data_to_plot <- metadata_table_nores %>%
@@ -448,13 +338,6 @@ emm_season_mast <- emmeans(shannon_season_no_slopes, ~ season_cat)
 pairs(emm_season_mast,  adjust = "tukey")
 emm_season_mast <- emmeans(shannon_season_no_slopes, ~ mast|season_cat)
 pairs(emm_season_mast,  adjust = "tukey")
-
-emmip(emm_season_mast, mast ~ season_cat, CIs = TRUE) + theme_classic()+
-  scale_fill_brewer(palette = "Set2") +
-  scale_color_brewer(palette = "Set2")
-
-
-
 
 
 
@@ -544,6 +427,16 @@ b <- b + guides(color = guide_legend(nrow = 2)) +theme(
 ggarrange(a, b, ncol = 1, heights = c(0.7,1),common.legend = TRUE, align = "v")
  
  
+
+
+
+
+
+
+
+
+
+
  #### Beta diversity ---------
 metadata_table <- metadata_table %>%
   mutate(years_cat = if_else(mast == "non-mast", "non-mast", as.character(year_factor)))
@@ -664,56 +557,6 @@ permanova_res = adonis2(bac.dist~run.x+sex+gr+age+year_factor+mast+season_cat*ma
                         by = "terms",data = metadata_table, strata = metadata_table$squirrel_id_letter)
 permanova_res
 
-#### Betadisper
-metadata_disp = paste(metadata_table$season_cat, metadata_table$year_factor, sep = "-")
-bd = betadisper(bac.dist,metadata_disp,  bias.adjust = TRUE)
-boxplot(bd)
-bd$distances
-metadata_table$disper = bd$distances
-metadata_table1 = metadata_table[!is.na(metadata_table$disper),]
-metadata_table1$disper
-model <- glmmTMB(disper ~ season_cat*mast+ as.factor(age)+sex+gr+  read_number+
-                   (1 | squirrel_id_letter)+ (1|year_factor)  , data = metadata_table1,
-  family = beta_family()
-)
-
-
-emm_season_mast <- emmeans(model, ~ mast|season_cat)
-pairs(emm_season_mast,  adjust = "tukey")
-
-
-
-emmip(emm_season_mast, mast ~ season_cat, CIs = TRUE) + theme_classic()+
-  scale_fill_brewer(palette = "Set2") 
-
-
-
-### Betadisper within individuals
-metadata_disp = paste(metadata_table$squirrel_id_letter, metadata_table$year_factor, sep = "-")
-bd = betadisper(bac.dist,metadata_table$squirrel_id_letter,  bias.adjust = TRUE)
-boxplot(bd)
-bd$distances
-metadata_table$disper = bd$distances
-
-metadata_table1 <- metadata_table %>%
-  # ensure date is Date class; adjust parsing function if your format is different
-  mutate(date = as.Date(date)) %>%
-  
-  group_by(squirrel_id_letter) %>%
-  mutate(
-    # convert Date to numeric (days since 1970-01-01), compute mean/median, convert back
-    mean_date = as.Date(mean(as.numeric(date), na.rm = TRUE), origin = "1970-01-01"),
-    median_date = as.Date(median(as.numeric(date), na.rm = TRUE), origin = "1970-01-01"),
-    
-    # signed difference in days (sample_date - mean_date); NA if date or mean/median is NA
-    days_from_mean = as.numeric(difftime(date, mean_date, units = "days")),
-    days_from_median = as.numeric(difftime(date, median_date, units = "days")),
-    
-    # absolute distance in days
-    abs_days_from_mean = abs(days_from_mean),
-    abs_days_from_median = abs(days_from_median)
-  ) %>%
-  ungroup()
 
 metadata_table1 <- metadata_table1 %>%
   # ensure columns exist and classes are ok
@@ -750,27 +593,6 @@ metadata_table1 <- metadata_table1 %>%
     n_other_year       = if_else(is.na(n_year),       NA_integer_, pmax(0L, n_year - 1L)),
     n_other_season     = if_else(is.na(n_season),     NA_integer_, pmax(0L, n_season - 1L))
   )
-disper_season_no_slopes = lmer(disper ~ abs_days_from_median  + n_other_yr_season+(1|squirrel_id_letter), data = metadata_table1)
-disper_season_no_slopes1 = lmer(disper ~ abs_days_from_mean  + n_other_yr_season+(1|squirrel_id_letter), data = metadata_table1)
-anova(disper_season_no_slopes,disper_season_no_slopes1) # meadian is better
-summary(disper_season_no_slopes1)
-
-disper_season_no_slopes = lmer(disper ~ abs_days_from_median +season_cat*mast +sex+ age+gr+read_number+n_other_season+(1|squirrel_id_letter)+(1|run.x)+(1|year_factor), data = metadata_table1)
-disper_season_no_slopes1 = lmer(disper ~ abs_days_from_median +season_cat*mast +sex+ age+gr+read_number+n_other_yr_season+(1|squirrel_id_letter)+(1|run.x)+(1|year_factor), data = metadata_table1)
-anova(disper_season_no_slopes,disper_season_no_slopes1) # other season1 is better
-anova(disper_season_no_slopes)
-summary(disper_season_no_slopes)
-
-
-emm_season_mast <- emmeans(disper_season_no_slopes, ~ season_cat|mast)
-pairs(emm_season_mast,  adjust = "tukey")
-
-emmip(emm_season_mast, mast ~ season_cat, CIs = TRUE) + theme_classic()+
-  scale_fill_brewer(palette = "Set2") +ylab("")
-
-emm_season_mast <- emmeans(disper_season_no_slopes, ~ mast|season_cat)
-pairs(emm_season_mast,  adjust = "tukey")
-
 
 #### diff ab -----------------
 table_table = generate.tax.summary.modified(ASVtab_16s.rar,as.data.frame(Taxtable))

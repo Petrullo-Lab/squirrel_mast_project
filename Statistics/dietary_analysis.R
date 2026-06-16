@@ -11,7 +11,7 @@ setwd("/Users/gabri/Library/CloudStorage/OneDrive-UniversityofArizona/Squirrels/
 source("~/Library/CloudStorage/OneDrive-UniversityofArizona/helpful_r_functions.R")
 
 
-### Mom
+### behaviour
 con <- krsp_connect (host = "krsp.cepb5cjvqban.us-east-2.rds.amazonaws.com",
                      dbname ="krsp",
                      username = Sys.getenv("krsp_user"),
@@ -22,10 +22,7 @@ con
 behaviour = tbl(con, "behaviour") %>%
   collect()
 
-dbbehaviour = tbl(con, "dbabehaviour") %>%
-  collect()
 
-unique(behaviour$grid)
 behaviour = behaviour[behaviour$grid %in% c("SU" ,"KL" ),]
 feed = behaviour[behaviour$behaviour == 1,]
 feed$detail = as.factor(feed$detail)
