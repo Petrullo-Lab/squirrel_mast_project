@@ -7,7 +7,9 @@ To start process the downaloded fastq files present at the accession number
 then run the following scripts:
 
 1) Bioinformatics/16s_dada2.R On each separate run file this runs. Dada2 and creates ASVtables
-2) Bioinformatics/combination_runs.R to cobine the different runs. 
+2) Bioinformatics/combination_runs.R to cobine the different runs.  This code is generated through the KRSP database which has limited access. Please contact me for a copy of the data used if interested in repeating the analysis
+
+Neverthless I provide here the data to perform all statistical analysis
 
 Then you can move to statistics
 
@@ -15,7 +17,6 @@ Then you can move to statistics
 2) dietary_analysis.R for the dietary analysis
 3) picust_normal_analysis_masting.R for the analysis of the picrust predictions
 
-Certain code is generated through the KRSP database which has limited access. Please contact me for a copy of the data used if interested in repeating the analysis
 
 In the folder "BRMS" there are all codes to run BRMS models
 
