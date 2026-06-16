@@ -1,4 +1,4 @@
-# Code for mas project paper
+# Code for mast project paper
 
 This is a guide for the analysis presented in the paper  "Maternal effects shape scale-dependent convergence in gut microbial responses to environmental change"
 
