@@ -9,7 +9,7 @@ then run the following scripts:
 1) Bioinformatics/16s_dada2.R On each separate run file this runs. Dada2 and creates ASVtables
 2) Bioinformatics/combination_runs.R to cobine the different runs.  This code is generated through the KRSP database which has limited access. Please contact me for a copy of the data used if interested in repeating the analysis
 
-Neverthless I provide here the data to perform all statistical analysis
+Neverthless I provide here the data to perform all statistical analysis, in the folder data.
 
 Then you can move to statistics
 
